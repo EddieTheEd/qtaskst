@@ -5,6 +5,34 @@ from datetime import datetime
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget, QListWidgetItem, QLineEdit, QPushButton, QMessageBox, QShortcut
 from PyQt5.QtCore import Qt
 
+
+class DeletedTasksWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Deleted Tasks")
+        self.layout = QVBoxLayout()
+        self.list_widget = QListWidget()
+        self.list_widget.clear()
+        self.layout.addWidget(self.list_widget)
+        self.setLayout(self.layout)
+
+        screen = QApplication.primaryScreen()
+        width = screen.size().width()
+        height = screen.size().height()
+        self.resize(int(width * 0.7), int(height * 0.6))
+        self.setStyleSheet("background-color: #1A1B26; color: #D5D6DB;")
+        QShortcut(Qt.CTRL + Qt.Key_W, self).activated.connect(self.close)
+        try:
+            with open("tasks_deleted.pkl", "rb") as f:
+                deleted_tasks = pickle.load(f)
+                if deleted_tasks:
+                    for task in deleted_tasks:
+                        self.list_widget.addItem(QListWidgetItem(task))
+        except (FileNotFoundError, EOFError):
+            self.list_widget.addItem(QListWidgetItem("No deleted tasks."))
+
+        
+
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -26,7 +54,7 @@ class MainWindow(QWidget):
         width = screen.size().width()
         height = screen.size().height()
         self.resize(int(width * 0.7), int(height * 0.6))
-        self.setStyleSheet("background-color: #2b2a34; color: white;")
+        self.setStyleSheet("background-color: #1A1B26; color: #D5D6DB;")
         self.load_tasks()
         self.create_shortcuts()
 
@@ -68,10 +96,16 @@ class MainWindow(QWidget):
 
     def save_tasks(self):
         active_tasks = [self.list_widget.item(i).text() for i in range(self.list_widget.count()) if self.list_widget.item(i).flags() & Qt.ItemIsSelectable]
-        deleted_tasks = [self.list_widget.item(i).text() for i in range(self.list_widget.count()) if not self.list_widget.item(i).flags() & Qt.ItemIsSelectable]
-        with open("tasks_active.pkl", "wb") as f:
+
+        try:
+            with open("tasks_deleted.pkl", "rb") as f:
+                prior_deleted_tasks = pickle.load(f)
+        except (FileNotFoundError, EOFError):
+            prior_deleted_tasks = []
+        deleted_tasks = [self.list_widget.item(i).text() for i in range(self.list_widget.count()) if not self.list_widget.item(i).flags() & Qt.ItemIsSelectable] + prior_deleted_tasks
+        with open("tasks_active.pkl", "wb+") as f:
             pickle.dump(active_tasks, f)
-        with open("tasks_deleted.pkl", "wb") as f:
+        with open("tasks_deleted.pkl", "wb+") as f:
             pickle.dump(deleted_tasks, f)
 
     def load_tasks(self):
@@ -85,22 +119,14 @@ class MainWindow(QWidget):
 
     def show_deleted_tasks(self):
         try:
-            with open("tasks_deleted.pkl", "rb") as f:
-                deleted_tasks = pickle.load(f)
-                if deleted_tasks:
-                    msg = QMessageBox()
-                    msg.setWindowTitle("Deleted Tasks")
-                    msg.setIcon(QMessageBox.Information)
-                    msg.setText("\n".join(deleted_tasks))
-                    msg.exec_()
-                else:
-                    QMessageBox.information(self, "Deleted Tasks", "No deleted tasks found.")
+            self.deleted_tasks_window = DeletedTasksWindow()
+            self.deleted_tasks_window.show()
         except Exception:
             QMessageBox.information(self, "Deleted Tasks", "No deleted tasks could be found.")
 
     def clear_deleted_tasks(self):
         try:
-            open("tasks_deleted.pkl", "wb").close()
+            open("tasks_deleted.pkl", "wb+").close()
             QMessageBox.information(self, "Deleted Tasks", "Deleted tasks cleared successfully.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"An error occurred: {str(e)}")

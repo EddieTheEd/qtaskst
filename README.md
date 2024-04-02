@@ -10,4 +10,6 @@ python main.py
 ```
 
 # Packaging and distributing
-Soon to be done!
+Soon to be done! (For Linux, Windows)
+
+Please note that just running the .py script is a lot faster than using an executable version.

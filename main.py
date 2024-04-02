@@ -1,5 +1,7 @@
 import sys
 import pickle
+from datetime import datetime
+
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget, QListWidgetItem, QLineEdit, QPushButton, QMessageBox, QShortcut
 from PyQt5.QtCore import Qt
 
@@ -40,18 +42,29 @@ class MainWindow(QWidget):
             selected_items = self.list_widget.selectedItems()
             if selected_items:
                 for item in selected_items:
+                    font = item.font()
+                    font.setStrikeOut(True)
+                    item.setFont(font)
                     item.setForeground(Qt.gray)
                     item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
-                self.save_tasks()
+
+                    current_time = datetime.now().strftime("%d/%m/%Y %I:%M%p")
+                    original_text = item.text()
+                    deleted_text = f"{original_text} (Deleted {current_time})"
+                    item.setText(deleted_text)
+
+                    self.save_tasks()
         else:
             super().keyPressEvent(event)
 
     def add_task(self):
-        task = self.task_input.text()
-        if task:
-            self.list_widget.addItem(QListWidgetItem(task))
-            self.task_input.clear()
-            self.save_tasks()
+            task = self.task_input.text()
+            if task:
+                current_time = datetime.now().strftime("%d/%m/%Y %I:%M%p")
+                task_with_time = f"{task} (Added {current_time})"
+                self.list_widget.addItem(QListWidgetItem(task_with_time))
+                self.task_input.clear()
+                self.save_tasks()
 
     def save_tasks(self):
         active_tasks = [self.list_widget.item(i).text() for i in range(self.list_widget.count()) if self.list_widget.item(i).flags() & Qt.ItemIsSelectable]

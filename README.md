@@ -2,7 +2,7 @@
 A very, very lightweight task manager written in PyQt5.
 
 # Running
-*sys, pickle should be installed by default.*
+*sys, pickle, datetime should be installed by default.*
 
 ```
 pip install PyQt5

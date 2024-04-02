@@ -1,9 +1,11 @@
 import sys
 import pickle
 from datetime import datetime
+import os
 
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QListWidget, QListWidgetItem, QLineEdit, QPushButton, QMessageBox, QShortcut
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 
 
 class DeletedTasksWindow(QWidget):
@@ -16,6 +18,7 @@ class DeletedTasksWindow(QWidget):
         self.layout.addWidget(self.list_widget)
         self.setLayout(self.layout)
 
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'qtaskst.svg')))
         screen = QApplication.primaryScreen()
         width = screen.size().width()
         height = screen.size().height()
@@ -49,6 +52,7 @@ class MainWindow(QWidget):
         self.shortcuts_button.clicked.connect(self.shortcuts)
         self.layout.addWidget(self.shortcuts_button)
 
+        self.setWindowIcon(QIcon(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'qtaskst.svg')))
         self.setLayout(self.layout)
         screen = QApplication.primaryScreen()
         width = screen.size().width()

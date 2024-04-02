@@ -1,3 +1,5 @@
+<img src="qtaskst.svg" alt="qtaskst icon" width="300"/>
+
 # Qtaskst
 A very, very lightweight task manager written in PyQt5.
 
